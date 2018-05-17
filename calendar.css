@@ -102,9 +102,6 @@ img {
 #extern p::after { 
     content: ' | ';
 }
-#extern p:nth-child(3):after { 
-    content: '';
-}
 #extern p:last-child:after { 
     content: '';
 }
