@@ -114,7 +114,9 @@ img {
 .pynotebook a {
   color: rgb(204, 122, 0);
 }
-
+.qux a {
+    color: #1ca4fc;
+  }
 .today-button {
     background-color: #20a0ff;
 }

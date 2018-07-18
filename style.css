@@ -92,7 +92,7 @@ img {
 #extern p::after { 
     content: ' | ';
 }
-#extern p:nth-child(3):after { 
+#extern p:nth-child(4):after { 
     content: '';
 }
 #extern p:last-child:after { 
@@ -103,6 +103,9 @@ img {
 }
 .pynotebook a {
   color: rgb(204, 122, 0);
+}
+.qux a {
+  color: #1ca4fc;
 }
 @media (max-width: 450px) {
   #extern {
