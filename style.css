@@ -92,7 +92,7 @@ img {
 #extern p::after { 
     content: ' | ';
 }
-#extern p:nth-child(4):after { 
+#extern p:nth-child(5):after { 
     content: '';
 }
 #extern p:last-child:after { 
@@ -101,6 +101,9 @@ img {
 .modern-cpp a {
   color: #7C2E37;
 }
+.go-under-the-hood a {
+    color: #253F90;
+  }
 .pynotebook a {
   color: rgb(204, 122, 0);
 }
