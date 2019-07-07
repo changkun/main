@@ -1,41 +1,42 @@
 html, body {
-    overflow: hidden;
-    margin: 0;
+  overflow: hidden;
+  margin: 0;
+  background-color: #333;
 }
 body {
-    font-family: 'Open Sans', 'Helvetica Neue', 'Hiragino Sans GB', 'LiHei Pro', Arial, sans-serif;
-    color: #333;
+  font-family: 'Open Sans', 'Helvetica Neue', 'Hiragino Sans GB', 'LiHei Pro', Arial, sans-serif;
+  color: #333;
 }
 #particles {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 #app {
-    position: absolute;
-    width: 320px;
-    text-align: center;
-    top: 50%;
-    left: 50%;
-    margin-left: -160px;
-    margin-top: -160px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
+  position: absolute;
+  width: 320px;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  margin-left: -160px;
+  margin-top: -160px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 h1 {
-    color: #0176BA;
-    font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
-    font-weight: 300;
-    font-size: 30px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin: 20px 0px 12px;
-    left: 4px;
+  color: rgb(0, 145, 230);
+  font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 300;
+  font-size: 30px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 20px 0px 12px;
+  left: 4px;
 }
 h2 {
     color: #999;
@@ -89,25 +90,30 @@ img {
   margin: 0;
   letter-spacing: 2px;
 }
-#extern p::after { 
-    content: ' | ';
+#extern p::after {
+  color: white;
+  content: ' | ';
 }
 #extern p:nth-child(5):after { 
-    content: '';
+  content: '';
 }
 #extern p:last-child:after { 
-    content: '';
+  content: '';
 }
 .modern-cpp a {
-  color: #7C2E37;
+  font-weight: bold;
+  color: rgb(155, 58, 69);
 }
 .go-under-the-hood a {
-    color: #253F90;
-  }
+  font-weight: bold;
+  color: rgb(45, 152, 253);
+}
 .pynotebook a {
+  font-weight: bold;
   color: rgb(204, 122, 0);
 }
 .qux a {
+  font-weight: bold;
   color: #1ca4fc;
 }
 @media (max-width: 450px) {
