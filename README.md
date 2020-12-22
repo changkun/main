@@ -1,7 +1,13 @@
-# changkun.de
+# changkun.de main website
 
-Source code.
+The source code.
+
+## Usage
+
+```
+make up
+```
 
 ## License
 
-MIT
+MIT | Copyright &copy; 2016 - 2020 [Changkun Ou](https://changkun.de)
