@@ -5,7 +5,8 @@ The source code.
 ## Usage
 
 ```
-make up
+$ docker network create traefik_proxy
+$ make build && make up
 ```
 
 ## License

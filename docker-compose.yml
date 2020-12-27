@@ -2,14 +2,18 @@
 # Use of this source code is governed by a MIT
 # license that can be found in the LICENSE file.
 
-version: "3"
+version: '3'
+
 services:
   main:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: main
     restart: always
     image: main:latest
-    ports:
-      - "9121:9121"
+    deploy:
+      replicas: 3
+    environment:
+      - "MAIN_ADDR=main:80"
+    networks:
+      - traefik_proxy
+networks:
+  traefik_proxy:
+    external: true

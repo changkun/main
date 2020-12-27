@@ -37,7 +37,10 @@ func main() {
 	r := http.NewServeMux()
 	r.Handle("/", http.FileServer(http.FS(changkunFS{static})))
 
-	const addr = "0.0.0.0:9121"
+	addr := os.Getenv("MAIN_ADDR")
+	if len(addr) == 0 {
+		addr = "0.0.0.0:80"
+	}
 	s := &http.Server{
 		Addr:         addr,
 		Handler:      logger(r),

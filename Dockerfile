@@ -4,4 +4,5 @@
 
 FROM alpine
 COPY main /app/main
+EXPOSE 80
 CMD ["/app/main"]
