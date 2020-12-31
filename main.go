@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"strings"
 	"time"
 )
@@ -21,21 +20,16 @@ import (
 //go:embed static/*
 var static embed.FS
 
-// changkunFS implements fs.FS
-type changkunFS struct {
-	content embed.FS
-}
-
-func (c changkunFS) Open(name string) (fs.File, error) {
-	return c.content.Open(path.Join("static", name))
-}
-
 func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
 	logger := logging(l)
 
 	r := http.NewServeMux()
-	r.Handle("/", http.FileServer(http.FS(changkunFS{static})))
+	fsys, err := fs.Sub(static, "static")
+	if err != nil {
+		panic(err)
+	}
+	r.Handle("/", http.FileServer(http.FS(fsys)))
 
 	addr := os.Getenv("MAIN_ADDR")
 	if len(addr) == 0 {
