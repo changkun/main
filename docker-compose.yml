@@ -9,7 +9,7 @@ services:
     restart: always
     image: main:latest
     deploy:
-      replicas: 3
+      replicas: 1
     environment:
       - "MAIN_ADDR=main:80"
     networks:
