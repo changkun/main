@@ -90,3 +90,11 @@ var particles = particlesJS("particles", {
   },
   "retina_detect": true
 });
+
+const login = document.getElementById('login')
+if (login !== null) {
+  login.addEventListener('click', ev => {
+    ev.preventDefault()
+    window.location.href = 'https://login.changkun.de?redirect='+window.location.href
+  })
+}

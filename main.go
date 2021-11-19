@@ -17,19 +17,26 @@ import (
 	"time"
 )
 
-//go:embed static/*
-var static embed.FS
+var (
+	//go:embed static/*
+	static embed.FS
+	fsys   http.FileSystem
+)
+
+func init() {
+	subFS, err := fs.Sub(static, "static")
+	if err != nil {
+		panic(err)
+	}
+	fsys = http.FS(subFS)
+}
 
 func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
 	logger := logging(l)
 
 	r := http.NewServeMux()
-	fsys, err := fs.Sub(static, "static")
-	if err != nil {
-		panic(err)
-	}
-	r.Handle("/", http.FileServer(http.FS(fsys)))
+	r.Handle("/", FileServer(fsys))
 
 	addr := os.Getenv("MAIN_ADDR")
 	if len(addr) == 0 {
