@@ -42,7 +42,7 @@ type fileHandler struct {
 func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token != "" {
-		err := login.Check(token)
+		err := login.Verify(token)
 		if err != nil {
 			http.Redirect(w, r, "/401.html", http.StatusTemporaryRedirect)
 			return
