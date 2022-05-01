@@ -11,8 +11,6 @@ services:
     deploy:
       replicas: 1
     environment:
-      NEWRELIC_NAME: ${NEWRELIC_NAME}
-      NEWRELIC_LICENSE: ${NEWRELIC_LICENSE}
       MAIN_ADDR: main:80
     networks:
       - traefik_proxy

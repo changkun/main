@@ -15,40 +15,10 @@ import (
 	"os/signal"
 	"strings"
 	"time"
-
-	"github.com/newrelic/go-agent/v3/newrelic"
-)
-
-var (
-	app     *newrelic.Application
-	wrapper = newrelic.WrapHandle
 )
 
 func init() {
 	log.SetPrefix("main")
-	name := os.Getenv("NEWRELIC_NAME")
-	lice := os.Getenv("NEWRELIC_LICENSE")
-
-	if name == "" || lice == "" {
-		// Don't use NewRelic is name or license is missing.
-		wrapper = func(app *newrelic.Application, pattern string, handler http.Handler) (string, http.Handler) {
-			return pattern, handler
-		}
-		log.Println("NewRelic is deactivated.")
-		return
-	}
-
-	var err error
-	app, err = newrelic.NewApplication(
-		newrelic.ConfigAppName(os.Getenv("NEWRELIC_NAME")),
-		newrelic.ConfigLicense(os.Getenv("NEWRELIC_LICENSE")),
-		newrelic.ConfigDistributedTracerEnabled(true),
-	)
-	if err != nil {
-		log.Fatalf("Failed to created NewRelic application: %v", err)
-	}
-
-	log.Println("NewRelic is activated.")
 }
 
 var (
@@ -69,7 +39,7 @@ func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
 	logger := logging(l)
 	r := http.NewServeMux()
-	r.Handle(wrapper(app, "/", FileServer(fsys)))
+	r.Handle("/", FileServer(fsys))
 
 	addr := os.Getenv("MAIN_ADDR")
 	if len(addr) == 0 {
