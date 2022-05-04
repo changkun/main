@@ -50,6 +50,7 @@ h1, h2 {
     position: relative;
 }
 p {
+    color: #999;
     font-size: 14px;
     line-height: 2em;
     margin: 0;
