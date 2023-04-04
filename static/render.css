@@ -18,7 +18,7 @@ body {
 }
 #app {
   position: absolute;
-  width: 320px;
+  width: 340px;
   text-align: center;
   top: 50%;
   left: 50%;
@@ -34,7 +34,7 @@ h1 {
   font-weight: 300;
   font-size: 30px;
   letter-spacing: 3px;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   margin: 20px 0px 12px;
   left: 4px;
 }
@@ -118,7 +118,7 @@ img {
     position: absolute;
     text-align: center;
     bottom: 1%;
-    width: 300px;
+    width: 340px;
     left: 50%;
     margin-left: -150px;
   }
