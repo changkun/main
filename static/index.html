@@ -127,6 +127,18 @@
                     loginEl.textContent = data.username || 'Logged in';
                     loginEl.removeAttribute('href');
                     loginEl.style.cursor = 'default';
+                    // Add logout link.
+                    const sep = document.createTextNode(' | ');
+                    const logout = document.createElement('a');
+                    logout.textContent = 'Logout';
+                    logout.style.cursor = 'pointer';
+                    logout.addEventListener('click', () => {
+                        document.cookie = 'auth=; Domain=changkun.de; Path=/; Max-Age=0';
+                        document.cookie = 'auth=; Path=/; Max-Age=0';
+                        window.location.replace(window.location.origin + window.location.pathname);
+                    });
+                    loginEl.parentNode.appendChild(sep);
+                    loginEl.parentNode.appendChild(logout);
                 })
                 .catch(() => {});
             })();
