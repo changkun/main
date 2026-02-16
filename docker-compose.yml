@@ -12,6 +12,11 @@ services:
       replicas: 1
     environment:
       MAIN_ADDR: main:80
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - traefik_proxy
 networks:

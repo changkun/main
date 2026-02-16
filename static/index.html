@@ -73,7 +73,7 @@
                 <a href="https://changkun.de/modern-cpp">Modern C++</a>
                 <a href="https://changkun.de/s/golang-design">golang.design</a>
             </div>
-            <span>&copy; 2016–<script>document.write(new Date().getFullYear())</script> Changkun Ou | <a id="login">Login</a></span>
+            <span>&copy; 2016–<script>document.write(new Date().getFullYear())</script> Changkun Ou | <a id="login" href="https://login.changkun.de/?redirect=https://changkun.de">Login</a></span>
         </footer>
 
         <script>
@@ -104,6 +104,31 @@
                         setTheme(e.matches ? 'dark' : 'light');
                     }
                 });
+            })();
+        </script>
+        <script>
+            (function() {
+                const loginEl = document.getElementById('login');
+                const match = document.cookie.match(/(?:^|;\s*)auth=([^;]*)/);
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get('token') || (match ? match[1] : null);
+                if (!token) return;
+
+                fetch('https://login.changkun.de/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token }),
+                })
+                .then(resp => {
+                    if (!resp.ok) throw new Error('verify failed');
+                    return resp.json();
+                })
+                .then(data => {
+                    loginEl.textContent = data.username || 'Logged in';
+                    loginEl.removeAttribute('href');
+                    loginEl.style.cursor = 'default';
+                })
+                .catch(() => {});
             })();
         </script>
         <script async src="//changkun.de/urlstat/client.js"></script>
