@@ -105,10 +105,17 @@ h1 {
 }
 
 .role {
-  margin: 0 0 20px;
+  margin: 0 0 6px;
   font-size: 15px;
   font-weight: 500;
   color: var(--accent);
+}
+
+.role-sub {
+  margin: 0 0 20px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-secondary);
 }
 
 .bio {
