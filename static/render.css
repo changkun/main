@@ -160,6 +160,75 @@ nav a:hover {
   color: var(--text);
 }
 
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px 48px;
+}
+
+.page .info {
+  max-width: 560px;
+  width: 100%;
+}
+
+.page h1 {
+  text-align: center;
+}
+
+.lede {
+  margin: 0 0 40px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.books {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.book {
+  display: block;
+  text-decoration: none;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.books .book:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.book-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.2s;
+}
+
+.book:hover .book-title {
+  color: var(--accent);
+}
+
+.book-sub {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.book-desc {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 footer {
   padding: 24px;
   text-align: center;
@@ -174,7 +243,8 @@ footer {
 .footer-links {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 12px 24px;
 }
 
 footer a {
