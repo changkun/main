@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>latere login test</title>
+<style>
+  body { font: 15px/1.6 -apple-system, system-ui, sans-serif; max-width: 760px;
+         margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+  h1 { font-size: 20px; }
+  button { font: inherit; padding: 8px 16px; margin-right: 8px; cursor: pointer;
+           border: 1px solid #888; border-radius: 6px; background: #fff; }
+  button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .status { padding: 10px 14px; border-radius: 6px; margin: 16px 0; }
+  .ok  { background: #e6f6ec; color: #1a6b34; }
+  .no  { background: #fdecec; color: #a3242b; }
+  pre { background: #f5f5f5; padding: 14px; border-radius: 6px; overflow-x: auto;
+        font: 13px/1.5 ui-monospace, Menlo, monospace; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>latere login test</h1>
+<p>Exercises the full PKCE round-trip against <code>auth.latere.ai</code> using the
+   hosted <code>/login-sdk.js</code>. This page is its own redirect_uri:
+   <code id="ruri"></code></p>
+
+<div id="status" class="status">checking…</div>
+
+<p>
+  <button id="login" class="primary">Log in</button>
+  <button id="logout">Log out</button>
+</p>
+
+<h3>Access token (decoded JWT claims)</h3>
+<pre id="claims">—</pre>
+
+<script src="/login-sdk.js"></script>
+<script>
+(function() {
+  var statusEl = document.getElementById('status');
+  var claimsEl = document.getElementById('claims');
+  document.getElementById('ruri').textContent = location.origin + location.pathname;
+
+  function decodeJwt(t) {
+    try {
+      var p = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(decodeURIComponent(escape(atob(p))));
+    } catch (e) { return null; }
+  }
+
+  function render() {
+    var token = latereAuth.getToken;
+    if (latereAuth.hasValidToken()) {
+      var raw = JSON.parse(localStorage.getItem('latere-token'));
+      statusEl.className = 'status ok';
+      statusEl.textContent = 'Logged in — token valid until ' +
+        new Date(raw.expires_at).toLocaleString();
+      var claims = decodeJwt(raw.access_token);
+      claimsEl.textContent = claims ? JSON.stringify(claims, null, 2)
+        : '(access token is opaque, not a JWT)\n' + raw.access_token.slice(0, 40) + '…';
+    } else {
+      statusEl.className = 'status no';
+      statusEl.textContent = 'Not logged in.';
+      claimsEl.textContent = '—';
+    }
+  }
+
+  document.getElementById('login').addEventListener('click', function() {
+    latereAuth.login(location.href);
+  });
+  document.getElementById('logout').addEventListener('click', function() {
+    latereAuth.logout();
+    render();
+  });
+
+  // Finish any pending redirect (?code=...), then render.
+  latereAuth.handleCallback().then(function(ok) {
+    if (!ok && location.search.indexOf('error') !== -1) {
+      statusEl.className = 'status no';
+      statusEl.textContent = 'Login failed: ' + location.search;
+    }
+    render();
+  });
+})();
+</script>
+</body>
+</html>
