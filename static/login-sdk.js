@@ -30,6 +30,12 @@
     return location.origin + location.pathname;
   }
 
+  // The token endpoint carries client_id in the query so the auth server's CORS
+  // middleware can look up allowed_origins and emit Access-Control-Allow-Origin.
+  function tokenURL() {
+    return AUTH_URL + '/token?client_id=' + encodeURIComponent(CLIENT_ID);
+  }
+
   function b64url(bytes) {
     var s = btoa(String.fromCharCode.apply(null, new Uint8Array(bytes)));
     return s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -103,7 +109,10 @@
       client_id: CLIENT_ID,
       code_verifier: verifier
     });
-    return fetch(AUTH_URL + '/token', {
+    // client_id is repeated in the query string: the auth server's CORS
+    // middleware resolves the client (and thus allowed_origins) from the URL,
+    // not the POST body, so the Access-Control-Allow-Origin header depends on it.
+    return fetch(tokenURL(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString()
@@ -121,7 +130,7 @@
       refresh_token: t.refresh_token,
       client_id: CLIENT_ID
     });
-    return fetch(AUTH_URL + '/token', {
+    return fetch(tokenURL(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString()
