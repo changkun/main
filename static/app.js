@@ -92,9 +92,9 @@ var particles = particlesJS("particles", {
 });
 
 const login = document.getElementById('login')
-if (login !== null) {
+if (login !== null && typeof latereAuth !== 'undefined') {
   login.addEventListener('click', ev => {
     ev.preventDefault()
-    window.location.href = 'https://login.changkun.de?redirect='+window.location.href
+    latereAuth.login(window.location.href)
   })
 }

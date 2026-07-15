@@ -333,7 +333,7 @@
         </main>
 
         <footer>
-            <span>&copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> Changkun Ou &middot; <a id="login" href="https://login.changkun.de/?redirect=https://changkun.de">Login</a></span>
+            <span>&copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> Changkun Ou &middot; <a id="login" href="#">Login</a></span>
         </footer>
 
         <script>
@@ -366,40 +366,49 @@
                 });
             })();
         </script>
+        <script src="/login-sdk.js"></script>
         <script>
+            // Footer login via the hosted latere PKCE SDK. Clicking Login starts
+            // the flow; on return we decode the JWT to show the user + a Logout.
             (function() {
                 const loginEl = document.getElementById('login');
-                const match = document.cookie.match(/(?:^|;\s*)auth=([^;]*)/);
-                const params = new URLSearchParams(window.location.search);
-                const token = params.get('token') || (match ? match[1] : null);
-                if (!token) return;
+                if (!loginEl || typeof latereAuth === 'undefined') return;
 
-                fetch('https://login.changkun.de/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: token }),
-                })
-                .then(resp => {
-                    if (!resp.ok) throw new Error('verify failed');
-                    return resp.json();
-                })
-                .then(data => {
-                    loginEl.textContent = data.username || 'Logged in';
+                function decodeJwt(t) {
+                    try {
+                        const p = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                        return JSON.parse(decodeURIComponent(escape(atob(p))));
+                    } catch (e) { return null; }
+                }
+
+                function showLoggedIn() {
+                    let raw = null;
+                    try { raw = JSON.parse(localStorage.getItem('latere-token')); } catch (e) {}
+                    const claims = raw ? decodeJwt(raw.access_token) : null;
+                    loginEl.textContent = (claims && (claims.email || claims.name || claims.sub)) || 'Logged in';
                     loginEl.removeAttribute('href');
                     loginEl.style.cursor = 'default';
                     const sep = document.createTextNode(' · ');
                     const logout = document.createElement('a');
                     logout.textContent = 'Logout';
-                    logout.style.cursor = 'pointer';
-                    logout.addEventListener('click', () => {
-                        document.cookie = 'auth=; Domain=changkun.de; Path=/; Max-Age=0';
-                        document.cookie = 'auth=; Path=/; Max-Age=0';
+                    logout.href = '#';
+                    logout.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        latereAuth.logout();
                         window.location.replace(window.location.origin + window.location.pathname);
                     });
                     loginEl.parentNode.appendChild(sep);
                     loginEl.parentNode.appendChild(logout);
-                })
-                .catch(() => {});
+                }
+
+                loginEl.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    latereAuth.login(window.location.href);
+                });
+
+                latereAuth.handleCallback().then((ok) => {
+                    if (ok || latereAuth.hasValidToken()) showLoggedIn();
+                });
             })();
         </script>
         <script async src="//changkun.de/urlstat/client.js"></script>
