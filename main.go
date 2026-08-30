@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"io/fs"
 	"log"
 	"net"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -37,28 +39,34 @@ func init() {
 
 func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
-	logger := logging(l)
-	r := http.NewServeMux()
-	r.Handle("/", FileServer(fsys))
 
 	addr := os.Getenv("MAIN_ADDR")
-	if len(addr) == 0 {
+	if addr == "" {
 		addr = "0.0.0.0:80"
 	}
+
+	r := http.NewServeMux()
+	r.Handle("/", FileServer(fsys))
 	s := &http.Server{
-		Addr:         addr,
-		Handler:      logger(r),
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: time.Minute,
-		IdleTimeout:  time.Minute,
+		Addr:              addr,
+		Handler:           logging(l)(r),
+		ErrorLog:          l,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      time.Minute,
+		IdleTimeout:       time.Minute,
 	}
 
-	done := make(chan bool)
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
+	// Container runtimes stop a service with SIGTERM; Ctrl-C sends SIGINT.
+	// Both must reach the graceful shutdown path.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
+	done := make(chan struct{})
 	go func() {
-		<-quit
+		defer close(done)
+		<-ctx.Done()
+		stop() // a second signal now terminates immediately
 		l.Println("changkun.de is shutting down...")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -66,18 +74,17 @@ func main() {
 
 		s.SetKeepAlivesEnabled(false)
 		if err := s.Shutdown(ctx); err != nil {
-			l.Fatalf("cannot gracefully shutdown changkun.de: %v", err)
+			l.Printf("cannot gracefully shutdown changkun.de: %v", err)
 		}
-		close(done)
 	}()
 
 	l.Printf("changkun.de is serving on %s...", addr)
-	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		l.Fatalf("cannot listen on %s, err: %v\n", addr, err)
+	if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		l.Fatalf("cannot listen on %s, err: %v", addr, err)
 	}
 
-	l.Println("goodbye!")
 	<-done
+	l.Println("goodbye!")
 }
 
 func logging(logger *log.Logger) func(http.Handler) http.Handler {
@@ -92,12 +99,11 @@ func logging(logger *log.Logger) func(http.Handler) http.Handler {
 }
 
 func readIP(r *http.Request) string {
-	clientIP := r.Header.Get("X-Forwarded-For")
-	clientIP = strings.TrimSpace(strings.Split(clientIP, ",")[0])
-	if clientIP == "" {
-		clientIP = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+	forwarded, _, _ := strings.Cut(r.Header.Get("X-Forwarded-For"), ",")
+	if clientIP := strings.TrimSpace(forwarded); clientIP != "" {
+		return clientIP
 	}
-	if clientIP != "" {
+	if clientIP := strings.TrimSpace(r.Header.Get("X-Real-Ip")); clientIP != "" {
 		return clientIP
 	}
 	if addr := r.Header.Get("X-Appengine-Remote-Addr"); addr != "" {
