@@ -37,8 +37,8 @@ func TestFileServerStatus(t *testing.T) {
 		{"unauthorized page", "/401.html", http.StatusUnauthorized, "401.html"},
 		{"not found page", "/404.html", http.StatusNotFound, "404.html"},
 		{"login sdk", "/login-sdk.js", http.StatusOK, "login-sdk.js"},
-		// The legacy login.changkun.de flow redirected any ?token= request.
-		// It must now be an ordinary page load.
+		// The retired login flow redirected any ?token= request. Authentication
+		// is now a browser side PKCE exchange, so this is an ordinary page load.
 		{"token query is not special", "/?token=whatever", http.StatusOK, "index.html"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
