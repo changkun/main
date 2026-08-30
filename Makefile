@@ -6,7 +6,9 @@ NAME=main
 VERSION = $(shell git describe --always --tags)
 all:
 	go build
-build:
+test:
+	go test -race -cover ./...
+build: test
 	CGO_ENABLED=0 GOOS=linux go build
 	docker buildx build -t $(NAME):$(VERSION) -t $(NAME):latest --load .
 up:
