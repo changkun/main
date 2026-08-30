@@ -26,7 +26,7 @@ func init() {
 var (
 	//go:embed static/*
 	static embed.FS
-	fsys   http.FileSystem
+	fsys   fs.FS
 )
 
 func init() {
@@ -34,21 +34,53 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	fsys = http.FS(subFS)
+	fsys = subFS
 }
 
 func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
 
-	addr := os.Getenv("MAIN_ADDR")
+	ctx, stop := notifyShutdown(context.Background())
+	defer stop()
+
+	if err := run(ctx, os.Getenv("MAIN_ADDR"), l); err != nil {
+		l.Fatalf("changkun.de stopped: %v", err)
+	}
+	l.Println("goodbye!")
+}
+
+// run serves the site on addr until ctx is cancelled. An empty addr means
+// port 80 on every interface, which is what the container exposes.
+func run(ctx context.Context, addr string, l *log.Logger) error {
 	if addr == "" {
 		addr = "0.0.0.0:80"
 	}
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+	return serve(ctx, ln, l)
+}
 
+// notifyShutdown returns a context that is cancelled when the site is asked to
+// stop. Container runtimes send SIGTERM, a terminal sends SIGINT; both must
+// reach the graceful shutdown path. Once the first signal arrives the handlers
+// are removed again, so a second one terminates the process immediately.
+func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc) {
+	ctx, stop := signal.NotifyContext(parent, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-ctx.Done()
+		stop()
+	}()
+	return ctx, stop
+}
+
+// serve answers requests on ln until ctx is cancelled, then drains the
+// in-flight ones. A clean shutdown reports no error.
+func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	r := http.NewServeMux()
 	r.Handle("/", FileServer(fsys))
 	s := &http.Server{
-		Addr:              addr,
 		Handler:           logging(l)(r),
 		ErrorLog:          l,
 		ReadHeaderTimeout: 10 * time.Second,
@@ -57,16 +89,10 @@ func main() {
 		IdleTimeout:       time.Minute,
 	}
 
-	// Container runtimes stop a service with SIGTERM; Ctrl-C sends SIGINT.
-	// Both must reach the graceful shutdown path.
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
 		<-ctx.Done()
-		stop() // a second signal now terminates immediately
 		l.Println("changkun.de is shutting down...")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -78,13 +104,13 @@ func main() {
 		}
 	}()
 
-	l.Printf("changkun.de is serving on %s...", addr)
-	if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		l.Fatalf("cannot listen on %s, err: %v", addr, err)
-	}
-
+	l.Printf("changkun.de is serving on %s...", ln.Addr())
+	err := s.Serve(ln)
 	<-done
-	l.Println("goodbye!")
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return err
 }
 
 func logging(logger *log.Logger) func(http.Handler) http.Handler {
