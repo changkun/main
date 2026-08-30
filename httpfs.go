@@ -11,8 +11,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-
-	"changkun.de/x/login"
 )
 
 // FileServer returns a handler that serves HTTP requests
@@ -39,18 +37,6 @@ type fileHandler struct {
 }
 
 func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("token")
-	if token != "" {
-		_, err := login.Verify(token)
-		if err != nil {
-			http.Redirect(w, r, "/401.html", http.StatusTemporaryRedirect)
-			return
-		}
-
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		return
-	}
-
 	upath := r.URL.Path
 	if !strings.HasPrefix(upath, "/") {
 		upath = "/" + upath
