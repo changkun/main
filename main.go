@@ -80,13 +80,16 @@ func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc
 func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	r := http.NewServeMux()
 	r.Handle("/", FileServer(fsys))
+	r.Handle(ideasPrefix, ideasHandler(newIdeasService(l), l))
 	s := &http.Server{
 		Handler:           logging(l)(r),
 		ErrorLog:          l,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      time.Minute,
-		IdleTimeout:       time.Minute,
+		// The ideas API waits on a model gateway, so the write budget is
+		// its slowest call rather than the file server's fastest.
+		WriteTimeout: 2 * time.Minute,
+		IdleTimeout:  time.Minute,
 	}
 
 	done := make(chan struct{})

@@ -204,52 +204,82 @@ func TestRun(t *testing.T) {
 	})
 }
 
-// The shipped binary must read MAIN_ADDR, serve the embedded site, and exit
-// cleanly on the SIGTERM that a container stop sends.
-func TestBinaryEndToEnd(t *testing.T) {
-	if testing.Short() {
-		t.Skip("the end to end test builds the binary")
-	}
+// startSite builds the shipped binary, runs it with env added to the
+// environment, and returns once it answers. The caller stops it.
+func startSite(t *testing.T, env ...string) (addr string, out *lockedBuffer, site *exec.Cmd) {
+	t.Helper()
 
 	bin := filepath.Join(t.TempDir(), "main")
 	build := exec.Command("go", "build", "-o", bin, ".")
-	if out, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("cannot build the site: %v\n%s", err, out)
+	if b, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("cannot build the site: %v\n%s", err, b)
 	}
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("cannot reserve a port: %v", err)
 	}
-	addr := ln.Addr().String()
+	addr = ln.Addr().String()
 	ln.Close()
 
-	var out lockedBuffer
-	site := exec.Command(bin)
-	site.Env = append(os.Environ(), "MAIN_ADDR="+addr)
-	site.Stdout, site.Stderr = &out, &out
+	out = &lockedBuffer{}
+	site = exec.Command(bin)
+	site.Env = append(append(os.Environ(), "MAIN_ADDR="+addr), env...)
+	site.Stdout, site.Stderr = out, out
 	if err := site.Start(); err != nil {
 		t.Fatalf("cannot start the site: %v", err)
 	}
-	defer site.Process.Kill()
+	t.Cleanup(func() { site.Process.Kill() })
 
-	var resp *http.Response
 	for range 100 {
+		var resp *http.Response
 		if resp, err = http.Get("http://" + addr + "/"); err == nil {
-			break
+			resp.Body.Close()
+			return addr, out, site
 		}
 		time.Sleep(50 * time.Millisecond)
 	}
+	t.Fatalf("the site never came up: %v\n%s", err, out.String())
+	return "", nil, nil
+}
+
+// get reads one response body and its status from the running site.
+func get(t *testing.T, addr, path string) (int, []byte) {
+	t.Helper()
+	resp, err := http.Get("http://" + addr + path)
 	if err != nil {
-		t.Fatalf("the site never came up: %v\n%s", err, out.String())
+		t.Fatalf("cannot reach %s: %v", path, err)
 	}
-	body, _ := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("got status %d, want %d", resp.StatusCode, http.StatusOK)
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("cannot read %s: %v", path, err)
+	}
+	return resp.StatusCode, body
+}
+
+// The shipped binary must read MAIN_ADDR, serve the embedded site, and exit
+// cleanly on the SIGTERM that a container stop sends.
+//
+// It runs here without any ideas credentials, which is the case that must
+// keep working: serving changkun.de cannot depend on the API's configuration.
+func TestBinaryEndToEnd(t *testing.T) {
+	if testing.Short() {
+		t.Skip("the end to end test builds the binary")
+	}
+
+	addr, out, site := startSite(t)
+
+	code, body := get(t, addr, "/")
+	if code != http.StatusOK {
+		t.Errorf("got status %d, want %d", code, http.StatusOK)
 	}
 	if !bytes.Equal(body, mustRead(t, "index.html")) {
 		t.Error("the served body is not the embedded home page")
+	}
+
+	if code, _ := get(t, addr, "/ideas/ping"); code != http.StatusServiceUnavailable {
+		t.Errorf("GET /ideas/ping = %d, want %d", code, http.StatusServiceUnavailable)
 	}
 
 	if err := site.Process.Signal(syscall.SIGTERM); err != nil {
@@ -260,6 +290,37 @@ func TestBinaryEndToEnd(t *testing.T) {
 	}
 	if got := out.String(); !strings.Contains(got, "goodbye!") {
 		t.Errorf("the site did not shut down gracefully, got %q", got)
+	}
+}
+
+// One process serves both the site and the ideas API. Before they were merged
+// these answered on two containers, and the API reached callers through a
+// traefik router of its own.
+func TestBinaryServesSiteAndIdeas(t *testing.T) {
+	if testing.Short() {
+		t.Skip("the end to end test builds the binary")
+	}
+
+	addr, _, _ := startSite(t,
+		"LLM_BASE_URL=https://lux.example",
+		"LLM_API_KEY=key",
+		"GIT_TOKEN=token",
+	)
+
+	code, body := get(t, addr, "/")
+	if code != http.StatusOK {
+		t.Errorf("GET / = %d, want %d", code, http.StatusOK)
+	}
+	if !bytes.Equal(body, mustRead(t, "index.html")) {
+		t.Error("the served body is not the embedded home page")
+	}
+
+	code, body = get(t, addr, "/ideas/ping")
+	if code != http.StatusOK {
+		t.Errorf("GET /ideas/ping = %d, want %d", code, http.StatusOK)
+	}
+	if got := strings.TrimSpace(string(body)); got != "pong" {
+		t.Errorf("GET /ideas/ping = %q, want pong", got)
 	}
 }
 
