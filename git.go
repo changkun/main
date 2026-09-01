@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -25,6 +26,9 @@ type githubClient struct {
 	repo  string
 	name  string
 	email string
+	// baseURL overrides the GitHub API root. Empty means the real one; a
+	// test points it at a server it can inspect.
+	baseURL string
 }
 
 type createFileRequest struct {
@@ -56,8 +60,8 @@ func (g *githubClient) createFile(ctx context.Context, path, content, commitMsg 
 		return fmt.Errorf("marshal request: %w", err)
 	}
 
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s",
-		g.owner, g.repo, path)
+	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s",
+		cmp.Or(g.baseURL, "https://api.github.com"), g.owner, g.repo, path)
 	req, err := http.NewRequestWithContext(ctx, "PUT", url, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
