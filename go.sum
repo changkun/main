@@ -1,0 +1,4 @@
+golang.org/x/oauth2 v0.36.0 h1:peZ/1z27fi9hUOFCAZaHyrpWG5lwe0RJEEEeH0ThlIs=
+golang.org/x/oauth2 v0.36.0/go.mod h1:YDBUJMTkDnJS+A4BP4eZBjCqtokkg1hODuPjwiGPO7Q=
+latere.ai/x/pkg v0.45.0 h1:OQz5OCNwq/Gxl/otAhOBUPjg1JXAJwJpatJDqluSMGM=
+latere.ai/x/pkg v0.45.0/go.mod h1:alzUneBLzY7SmvQZV4Xk9SLyJu0ofEMFvIj/EgMaibE=
