@@ -41,6 +41,12 @@ dialect, so one request shape covers every model it routes. Augmentation asks
 the provider to search and fetch pages itself, which is what makes the
 citations point at sources that exist.
 
+Two things follow from the dialect being the native one. `LLM_BASE_URL` is the
+gateway root: the calls go to `POST /lux/v1/generate`, which does not exist
+under a provider-compatible surface such as `/anthropic`. And a model is named
+on its own, without a provider prefix, because routing comes from the key's
+bindings; a prefixed name is refused with "model is not bound on this key".
+
 Every instruction sent to a model lives in `prompts/` as a Go text template,
 compiled into the binary with `go:embed`. A deployed server carries its own
 prompts and cannot drift from the ones it was built with.
@@ -59,10 +65,10 @@ are required to mount the API; everything else has a default.
 | Variable | Default | Description |
 |---|---|---|
 | `MAIN_ADDR` | `0.0.0.0:80` | Listen address |
-| `LLM_BASE_URL` | — | Lux gateway base URL |
+| `LLM_BASE_URL` | — | Lux gateway root, e.g. `https://lux.latere.ai` |
 | `LLM_API_KEY` | — | Lux API key |
-| `LLM_MODEL` | `anthropic/claude-sonnet-4-5-20250929` | Augmentation and translation |
-| `LLM_TITLE_MODEL` | `anthropic/claude-haiku-4-5-20251001` | Title, slug, and polish |
+| `LLM_MODEL` | `claude-opus-4-8` | Augmentation and translation |
+| `LLM_TITLE_MODEL` | `claude-haiku-4-5-20251001` | Title, slug, and polish |
 | `GIT_TOKEN` | — | GitHub personal access token |
 | `GIT_REPO` | `changkun/blog` | Target repository, `owner/repo` |
 | `GIT_COMMITTER_NAME` | `Changkun Ideas API Server` | Commit author name |

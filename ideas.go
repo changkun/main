@@ -15,6 +15,16 @@ import (
 	"latere.ai/x/pkg/luxsdk"
 )
 
+// The gateway's native dialect names a model on its own, without a provider
+// prefix: luxsdk posts to POST /lux/v1/generate, where routing comes from the
+// key's bindings rather than from the name. A prefixed name is refused with
+// "model is not bound on this key". The prefixed form belongs to the
+// gateway's provider-compatible surfaces, which this service does not use.
+const (
+	defaultModel      = "claude-opus-4-8"
+	defaultTitleModel = "claude-haiku-4-5-20251001"
+)
+
 // ideasPrefix is the subtree the ideas API owns. The routes below repeat it
 // because the handler is mounted without stripping the prefix, which keeps the
 // paths in this file the same as the ones a caller types.
@@ -47,8 +57,8 @@ func newIdeasService(l *log.Logger) *service {
 		log: l,
 		llm: &llmClient{
 			lux:        luxsdk.New(llmBaseURL, luxsdk.WithAPIKey(llmAPIKey)),
-			model:      cmp.Or(os.Getenv("LLM_MODEL"), "anthropic/claude-sonnet-4-5-20250929"),
-			titleModel: cmp.Or(os.Getenv("LLM_TITLE_MODEL"), "anthropic/claude-haiku-4-5-20251001"),
+			model:      cmp.Or(os.Getenv("LLM_MODEL"), defaultModel),
+			titleModel: cmp.Or(os.Getenv("LLM_TITLE_MODEL"), defaultTitleModel),
 			log:        l,
 		},
 		github: &githubClient{

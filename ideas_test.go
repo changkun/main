@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -76,6 +77,34 @@ func TestNewIdeasServiceReadsRepo(t *testing.T) {
 					svc.github.owner, svc.github.repo, tt.wantOwner, tt.wantRepo)
 			}
 		})
+	}
+}
+
+// TestIdeasServiceModelsAreNativeNames pins the dialect the gateway speaks.
+// luxsdk posts to /lux/v1/generate, which routes on the key's bindings, and a
+// provider-prefixed name is refused there with "model is not bound on this
+// key". The prefixed defaults shipped for four weeks and failed on the first
+// post that reached a healthy gateway.
+func TestIdeasServiceModelsAreNativeNames(t *testing.T) {
+	ideasEnv(t)
+	t.Setenv("LLM_MODEL", "")
+	t.Setenv("LLM_TITLE_MODEL", "")
+
+	svc := newIdeasService(discard())
+	if svc == nil {
+		t.Fatal("newIdeasService() = nil, want a service")
+	}
+	for _, m := range []struct{ name, model string }{
+		{"LLM_MODEL", svc.llm.model},
+		{"LLM_TITLE_MODEL", svc.llm.titleModel},
+	} {
+		if m.model == "" {
+			t.Errorf("the %s default is empty", m.name)
+		}
+		if strings.Contains(m.model, "/") {
+			t.Errorf("the %s default is %q, want a bare model name: the native "+
+				"dialect refuses a provider prefix", m.name, m.model)
+		}
 	}
 }
 
