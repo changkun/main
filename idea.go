@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -112,11 +113,10 @@ func (s *service) processIdea(req ideaRequest) {
 		s.log.Printf("generating title for idea...")
 		title, err := s.llm.generateTitle(ctx, enriched)
 		if err != nil {
-			s.log.Printf("title generation failed: %v", err)
-			req.Title = "Untitled"
-		} else {
-			req.Title = title
+			s.log.Printf("idea not published: title generation failed: %v", err)
+			return
 		}
+		req.Title = title
 		s.log.Printf("generated title: %s", req.Title)
 	}
 
@@ -179,6 +179,18 @@ func (s *service) processIdea(req ideaRequest) {
 		}
 	}
 	s.log.Printf("detected language: %s", lang)
+
+	// Every step above degrades rather than fails, and the floor sits here
+	// because the ways they degrade all converge on one artifact: the source
+	// text in both language blocks. A gateway outage makes each fallback
+	// substitute the input, and a model that echoes the input into both
+	// fields passes isUsableTranslateResult on the primary path, so a check
+	// inside either branch would miss the other. Publishing that is worse
+	// than publishing nothing: it is permanent, dated, and public.
+	if err := checkBilingual(titleEn, titleZh, contentEn, contentZh); err != nil {
+		s.log.Printf("idea not published: %v", err)
+		return
+	}
 
 	// Generate short slug via LLM, fall back to mechanical slugify.
 	now := time.Now()
@@ -419,6 +431,35 @@ func normalizeTranslateResult(tr *translateResult, sourceLang string) *translate
 		n.PolishedContent, n.TranslatedContent = n.TranslatedContent, n.PolishedContent
 	}
 	return &n
+}
+
+// checkBilingual reports whether the two language versions are fit to publish.
+//
+// The titles are not compared: a title can legitimately read the same in both
+// languages. The bodies cannot. Two identical bodies mean no translation
+// happened, and a body whose script does not match its block means the two
+// were swapped or never produced.
+func checkBilingual(titleEn, titleZh, contentEn, contentZh string) error {
+	for _, f := range []struct{ name, value string }{
+		{"the en title", titleEn},
+		{"the zh title", titleZh},
+		{"the en content", contentEn},
+		{"the zh content", contentZh},
+	} {
+		if strings.TrimSpace(f.value) == "" {
+			return fmt.Errorf("%s is empty", f.name)
+		}
+	}
+	if strings.TrimSpace(contentEn) == strings.TrimSpace(contentZh) {
+		return errors.New("the en and zh content are identical, nothing was translated")
+	}
+	if detectLang(contentEn) != "en" {
+		return errors.New("the en content is not English")
+	}
+	if detectLang(contentZh) != "zh" {
+		return errors.New("the zh content is not Chinese")
+	}
+	return nil
 }
 
 func isUsableTranslateResult(tr *translateResult) bool {
