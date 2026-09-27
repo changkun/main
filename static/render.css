@@ -1,19 +1,24 @@
+/* The latere.ai ink palette, shared with the home page: neutral grays
+ * with no hue, and the ink itself as the accent. */
 :root {
-  --bg: #e8e8e8;
-  --text: #1a1a1a;
-  --text-secondary: #444444;
-  --text-muted: #777777;
-  --accent: #0055aa;
-  --border: #cccccc;
+  --bg: #ffffff;
+  --bg-raised: #f4f4f4;
+  --text: #0d0d0d;
+  --text-secondary: #525252;
+  --text-muted: #666666;
+  --accent: var(--text);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
 }
 
 [data-theme="dark"] {
-  --bg: #111111;
-  --text: #f5f5f5;
-  --text-secondary: #a0a0a0;
-  --text-muted: #666666;
-  --accent: #4da6ff;
-  --border: #333333;
+  --bg: #161616;
+  --bg-raised: #262626;
+  --text: #ececec;
+  --text-secondary: #b4b4b4;
+  --text-muted: #9a9a9a;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
 }
 
 * {
@@ -51,12 +56,12 @@ body {
   top: 24px;
   right: 24px;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   padding: 8px;
   cursor: pointer;
   color: var(--text-secondary);
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, background-color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,7 +69,7 @@ body {
 
 .theme-toggle:hover {
   color: var(--text);
-  border-color: var(--text-muted);
+  background: var(--bg-raised);
 }
 
 [data-theme="light"] .icon-sun,
@@ -156,7 +161,7 @@ nav.secondary {
 nav a {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text);
   text-decoration: none;
   transition: color 0.2s;
   display: inline-flex;
@@ -165,7 +170,7 @@ nav a {
 }
 
 nav a:hover {
-  color: var(--text);
+  color: var(--text-secondary);
 }
 
 .page {
@@ -220,7 +225,7 @@ nav a:hover {
 }
 
 .book:hover .book-title {
-  color: var(--accent);
+  color: var(--text-secondary);
 }
 
 .book-sub {

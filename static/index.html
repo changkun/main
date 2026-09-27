@@ -17,34 +17,30 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
         <style>
+            /* The latere.ai ink palette: neutral grays with no hue, and the
+             * ink itself as the accent. --text-faint is latere's control
+             * edge, used here only on display type, where 3:1 suffices. */
             :root {
-                --bg: #fafafa;
-                --text: #0a0a0a;
-                --text-secondary: #555555;
-                --text-muted: #a0a0a0;
-                --accent: #d97757;
+                --bg: #ffffff;
+                --bg-raised: #f4f4f4;
+                --text: #0d0d0d;
+                --text-secondary: #525252;
+                --text-muted: #666666;
+                --text-faint: #8a8a8a;
+                --accent: var(--text);
                 --border: rgba(0, 0, 0, 0.08);
-                --divider-a: rgba(0, 0, 0, 0.12);
-                --divider-b: rgba(0, 0, 0, 0.04);
-                --photo-border: rgba(0, 0, 0, 0.08);
-                --name-muted: #c8c2b8;
-                --cat-label: #b0aaa0;
-                --link: #333333;
+                --border-strong: rgba(0, 0, 0, 0.14);
             }
 
             [data-theme="dark"] {
-                --bg: #111111;
-                --text: #f5f5f5;
-                --text-secondary: #a0a0a0;
-                --text-muted: #777777;
-                --accent: #e0875f;
+                --bg: #161616;
+                --bg-raised: #262626;
+                --text: #ececec;
+                --text-secondary: #b4b4b4;
+                --text-muted: #9a9a9a;
+                --text-faint: #737373;
                 --border: rgba(255, 255, 255, 0.08);
-                --divider-a: rgba(255, 255, 255, 0.16);
-                --divider-b: rgba(255, 255, 255, 0.04);
-                --photo-border: rgba(255, 255, 255, 0.1);
-                --name-muted: #4a4640;
-                --cat-label: #777777;
-                --link: #cfc8be;
+                --border-strong: rgba(255, 255, 255, 0.14);
             }
 
             * { box-sizing: border-box; }
@@ -72,27 +68,39 @@
                 font-family: ui-monospace, 'SF Mono', 'Fira Code', Menlo, monospace;
             }
 
+            a:focus-visible,
+            button:focus-visible {
+                outline: 2px solid var(--accent);
+                outline-offset: 2px;
+            }
+
+            a:focus-visible { border-radius: 4px; }
+
             .theme-toggle {
                 position: fixed;
                 top: 24px;
                 right: 24px;
                 z-index: 50;
+                width: 36px;
+                height: 36px;
                 background: none;
-                border: 1px solid var(--border);
+                border: 1px solid var(--border-strong);
                 border-radius: 8px;
-                padding: 8px;
+                padding: 0;
                 cursor: pointer;
                 color: var(--text-secondary);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: color 0.2s, border-color 0.2s;
+                transition: color 0.2s, background-color 0.2s;
             }
 
             .theme-toggle:hover {
                 color: var(--text);
-                border-color: var(--text-muted);
+                background: var(--bg-raised);
             }
+
+            .theme-toggle svg { width: 18px; height: 18px; }
 
             [data-theme="light"] .icon-sun,
             [data-theme="dark"] .icon-moon { display: none; }
@@ -123,7 +131,7 @@
                 width: 160px;
                 height: 160px;
                 border-radius: 12px;
-                border: 1px solid var(--photo-border);
+                border: 1px solid var(--border);
                 display: block;
                 object-fit: cover;
             }
@@ -141,7 +149,7 @@
             .eyebrow {
                 font-size: 11px;
                 letter-spacing: 0.16em;
-                color: var(--accent);
+                color: var(--text-secondary);
                 text-transform: uppercase;
             }
 
@@ -155,7 +163,7 @@
                 color: var(--text);
             }
 
-            .name-muted { color: var(--name-muted); }
+            .name-muted { color: var(--text-faint); }
 
             .lede {
                 margin: 16px 0 0;
@@ -194,7 +202,7 @@
             .divider {
                 height: 1px;
                 margin: 38px 0 32px;
-                background: linear-gradient(90deg, var(--divider-a), var(--divider-b) 60%, transparent);
+                background: linear-gradient(90deg, var(--border-strong), var(--border) 60%, transparent);
             }
 
             .links {
@@ -206,7 +214,7 @@
             .col-label {
                 font-size: 10px;
                 letter-spacing: 0.14em;
-                color: var(--cat-label);
+                color: var(--text-muted);
                 text-transform: uppercase;
                 margin-bottom: 14px;
             }
@@ -219,12 +227,34 @@
                 font-weight: 500;
             }
 
+            /* An icon sits on the label's first line, so a label that
+             * wraps in a narrow column still reads from its icon. Links rest
+             * at the ink and dim on hover, the latere.ai link recipe. */
             .col-links a {
-                color: var(--link);
+                display: flex;
+                align-items: flex-start;
+                gap: 9px;
+                line-height: 20px;
+                color: var(--text);
                 transition: color 0.2s;
             }
 
-            .col-links a:hover { color: var(--accent); }
+            .col-links a:hover { color: var(--text-secondary); }
+
+            .icon {
+                flex: none;
+                width: 16px;
+                height: 16px;
+                margin-top: 2px;
+                color: var(--text-secondary);
+            }
+
+            /* A wordmark-shaped logo gets a wider box that reaches into the
+             * gap, so it reads at the size of a square icon while its label
+             * stays on the column's edge. */
+            .icon-wide { width: 20px; margin-right: -4px; }
+
+            .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
             footer {
                 padding: 28px 24px 32px;
@@ -252,6 +282,27 @@
         </style>
     </head>
     <body>
+        <svg class="sprite" aria-hidden="true" focusable="false">
+            <symbol id="i-research" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/></g></symbol>
+            <symbol id="i-resume" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M16 22a4 4 0 0 0-8 0"/><circle cx="12" cy="15" r="3"/></g></symbol>
+            <symbol id="i-cv" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></g></symbol>
+            <symbol id="i-blog" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 21h8"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></g></symbol>
+            <symbol id="i-books" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></g></symbol>
+            <symbol id="i-ideas" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></g></symbol>
+            <symbol id="i-unverifiable" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></g></symbol>
+            <symbol id="i-under-the-hood" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></g></symbol>
+            <symbol id="i-infrastructure" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></g></symbol>
+            <symbol id="i-email" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></g></symbol>
+            <symbol id="i-scholar" viewBox="0 0 24 24"><path fill="currentColor" d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></symbol>
+            <symbol id="i-orcid" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.525 0 .947.431.947.947s-.422.947-.947.947a.95.95 0 0 1-.947-.947c0-.525.422-.947.947-.947zm-.722 3.038h1.444v10.041H6.647V7.416zm3.562 0h3.9c3.712 0 5.344 2.653 5.344 5.025 0 2.578-2.016 5.025-5.325 5.025h-3.919V7.416zm1.444 1.303v7.444h2.297c3.272 0 4.022-2.484 4.022-3.722 0-2.016-1.284-3.722-4.097-3.722h-2.222z"/></symbol>
+            <symbol id="i-go" viewBox="0 7.5 24 9"><path fill="currentColor" d="M1.811 10.231c-.047 0-.058-.023-.035-.059l.246-.315c.023-.035.081-.058.128-.058h4.172c.046 0 .058.035.035.07l-.199.303c-.023.036-.082.07-.117.07zM.047 11.306c-.047 0-.059-.023-.035-.058l.245-.316c.023-.035.082-.058.129-.058h5.328c.047 0 .07.035.058.07l-.093.28c-.012.047-.058.07-.105.07zm2.828 1.075c-.047 0-.059-.035-.035-.07l.163-.292c.023-.035.07-.07.117-.07h2.337c.047 0 .07.035.07.082l-.023.28c0 .047-.047.082-.082.082zm12.129-2.36c-.736.187-1.239.327-1.963.514-.176.046-.187.058-.34-.117-.174-.199-.303-.327-.548-.444-.737-.362-1.45-.257-2.115.175-.795.514-1.204 1.274-1.192 2.22.011.935.654 1.706 1.577 1.835.795.105 1.46-.175 1.987-.77.105-.13.198-.27.315-.434H10.47c-.245 0-.304-.152-.222-.35.152-.362.432-.97.596-1.274a.315.315 0 01.292-.187h4.253c-.023.316-.023.631-.07.947a4.983 4.983 0 01-.958 2.29c-.841 1.11-1.94 1.8-3.33 1.986-1.145.152-2.209-.07-3.143-.77-.865-.655-1.356-1.52-1.484-2.595-.152-1.274.222-2.419.993-3.424.83-1.086 1.928-1.776 3.272-2.02 1.098-.2 2.15-.07 3.096.571.62.41 1.063.97 1.356 1.648.07.105.023.164-.117.2m3.868 6.461c-1.064-.024-2.034-.328-2.852-1.029a3.665 3.665 0 01-1.262-2.255c-.21-1.32.152-2.489.947-3.529.853-1.122 1.881-1.706 3.272-1.95 1.192-.21 2.314-.095 3.33.595.923.63 1.496 1.484 1.648 2.605.198 1.578-.257 2.863-1.344 3.962-.771.783-1.718 1.273-2.805 1.495-.315.06-.63.07-.934.106zm2.78-4.72c-.011-.153-.011-.27-.034-.387-.21-1.157-1.274-1.81-2.384-1.554-1.087.245-1.788.935-2.045 2.033-.21.912.234 1.835 1.075 2.21.643.28 1.285.244 1.905-.07.923-.48 1.425-1.228 1.484-2.233z"/></symbol>
+            <symbol id="i-cpp" viewBox="0 0 24 24"><path fill="currentColor" d="M22.394 6c-.167-.29-.398-.543-.652-.69L12.926.22c-.509-.294-1.34-.294-1.848 0L2.26 5.31c-.508.293-.923 1.013-.923 1.6v10.18c0 .294.104.62.271.91.167.29.398.543.652.69l8.816 5.09c.508.293 1.34.293 1.848 0l8.816-5.09c.254-.147.485-.4.652-.69.167-.29.27-.616.27-.91V6.91c.003-.294-.1-.62-.268-.91zM12 19.11c-3.92 0-7.109-3.19-7.109-7.11 0-3.92 3.19-7.11 7.11-7.11a7.133 7.133 0 016.156 3.553l-3.076 1.78a3.567 3.567 0 00-3.08-1.78A3.56 3.56 0 008.444 12 3.56 3.56 0 0012 15.555a3.57 3.57 0 003.08-1.778l3.078 1.78A7.135 7.135 0 0112 19.11zm7.11-6.715h-.79v.79h-.79v-.79h-.79v-.79h.79v-.79h.79v.79h.79zm2.962 0h-.79v.79h-.79v-.79h-.79v-.79h.79v-.79h.79v.79h.79z"/></symbol>
+            <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+            <symbol id="i-linkedin" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></symbol>
+            <symbol id="i-x" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></symbol>
+            <symbol id="i-latere" viewBox="147 279 736 425"><g fill="currentColor" transform="translate(0 1024) scale(0.1 -0.1)"><path d="M7281 7439 c-263 -25 -575 -124 -883 -280 -385 -196 -764 -463 -1133 -799 -163 -148 -575 -562 -702 -704 -315 -353 -539 -670 -638 -905 -19 -45 -35 -87 -35 -93 0 -6 22 23 48 63 168 256 665 790 1042 1120 638 557 1244 947 1735 1115 304 105 506 139 760 131 175 -6 239 -17 385 -63 103 -32 144 -52 238 -117 225 -155 371 -428 402 -751 35 -378 -122 -885 -405 -1311 -209 -314 -531 -641 -865 -882 -505 -364 -1124 -588 -1747 -633 -196 -14 -423 -1 -648 36 -166 28 -381 81 -464 113 -82 33 -73 17 15 -27 387 -193 909 -283 1409 -242 878 73 1740 531 2341 1245 348 413 589 914 670 1390 23 136 24 434 1 566 -68 393 -280 698 -607 872 -244 130 -585 188 -919 156z"/><path d="M3790 7343 c-199 -13 -403 -45 -550 -84 -738 -199 -1279 -609 -1578 -1197 -73 -143 -122 -285 -159 -457 -24 -118 -27 -149 -26 -330 0 -175 3 -215 26 -321 59 -279 177 -525 353 -734 325 -388 794 -609 1348 -637 313 -15 763 72 1096 212 262 110 529 267 730 428 99 80 286 263 365 357 57 68 155 210 155 224 0 4 -43 -32 -96 -78 -286 -251 -789 -554 -1129 -679 -629 -232 -1234 -231 -1698 3 -127 64 -211 123 -311 219 -217 210 -357 460 -422 761 -15 68 -19 127 -19 290 0 186 3 215 27 315 171 719 788 1271 1658 1484 488 119 948 121 1424 6 55 -13 102 -23 103 -21 6 6 -184 85 -277 115 -274 89 -728 145 -1020 124z"/><path d="M4355 6874 c-431 -32 -757 -119 -1081 -288 -453 -236 -748 -562 -860 -951 -87 -303 -41 -671 114 -915 170 -269 431 -430 787 -487 140 -22 438 -14 589 16 141 29 289 77 402 133 93 46 209 116 203 123 -2 1 -44 -11 -94 -27 -218 -74 -505 -110 -709 -90 -268 27 -449 86 -641 209 -364 235 -484 682 -295 1099 207 458 718 825 1385 994 444 113 807 127 1130 43 13 -3 17 -2 10 5 -33 32 -307 102 -480 122 -100 11 -382 20 -460 14z"/><path d="M7115 6809 c-463 -70 -919 -303 -1510 -775 -518 -413 -995 -938 -1203 -1328 -24 -43 -41 -82 -40 -87 2 -4 38 36 80 89 256 323 656 710 1038 1008 596 465 1139 743 1568 805 118 17 317 7 412 -21 225 -64 378 -206 446 -412 25 -75 28 -98 28 -228 0 -105 -5 -169 -18 -230 -80 -368 -281 -709 -631 -1069 -258 -265 -535 -468 -865 -632 -531 -264 -991 -378 -1539 -380 -210 0 -213 -9 -13 -36 168 -22 500 -22 675 1 333 43 709 152 1027 299 169 77 407 220 570 340 566 418 941 947 1065 1502 25 112 31 372 10 480 -60 317 -255 543 -549 634 -152 47 -389 64 -551 40z"/><path d="M6770 6241 c-199 -43 -425 -141 -623 -271 -60 -40 -107 -74 -104 -76 2 -2 42 14 88 35 122 57 334 127 455 151 334 64 544 -32 595 -273 19 -88 6 -238 -30 -346 -40 -118 -133 -301 -218 -428 -198 -297 -501 -598 -818 -811 -264 -177 -470 -272 -845 -391 -59 -18 127 -5 260 19 226 41 432 114 693 247 647 330 1105 859 1233 1424 12 50 17 120 18 214 0 121 -3 149 -23 205 -54 155 -154 253 -305 299 -88 27 -253 28 -376 2z"/><path d="M5515 5516 c-58 -27 -116 -82 -142 -135 -14 -27 -18 -59 -18 -131 0 -87 3 -100 30 -148 54 -99 132 -146 245 -146 96 -1 168 32 235 106 168 186 27 478 -230 478 -53 0 -82 -6 -120 -24z"/></g></symbol>
+        </svg>
+
         <button class="theme-toggle" aria-label="Toggle theme">
             <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -293,39 +344,39 @@
                     <div class="col">
                         <div class="col-label mono">Research</div>
                         <div class="col-links">
-                            <a href="https://changkun.de/s/research">Research</a>
-                            <a href="https://scholar.google.de/citations?user=3qjB-eUAAAAJ">Scholar</a>
-                            <a href="https://changkun.de/s/resume">Resume</a>
-                            <a href="https://changkun.de/s/cv">C.V.</a>
-                            <a href="https://orcid.org/0000-0002-4595-7485">ORCID</a>
+                            <a href="https://changkun.de/s/research"><svg class="icon" aria-hidden="true"><use href="#i-research"/></svg>Research</a>
+                            <a href="https://scholar.google.de/citations?user=3qjB-eUAAAAJ"><svg class="icon" aria-hidden="true"><use href="#i-scholar"/></svg>Scholar</a>
+                            <a href="https://changkun.de/s/resume"><svg class="icon" aria-hidden="true"><use href="#i-resume"/></svg>Resume</a>
+                            <a href="https://changkun.de/s/cv"><svg class="icon" aria-hidden="true"><use href="#i-cv"/></svg>C.V.</a>
+                            <a href="https://orcid.org/0000-0002-4595-7485"><svg class="icon" aria-hidden="true"><use href="#i-orcid"/></svg>ORCID</a>
                         </div>
                     </div>
                     <div class="col">
                         <div class="col-label mono">Writing</div>
                         <div class="col-links">
-                            <a href="https://changkun.de/s/blog">Blog</a>
-                            <a href="https://changkun.de/books/">Books</a>
-                            <a href="https://changkun.de/blog/ideas">Ideas</a>
-                            <a href="https://changkun.de/unverifiable-world">Unverifiable World</a>
-                            <a href="https://golang.design/under-the-hood">Go: Under the Hood</a>
-                            <a href="https://aaai.latere.ai">AI as an Infrastructure</a>
+                            <a href="https://changkun.de/s/blog"><svg class="icon" aria-hidden="true"><use href="#i-blog"/></svg>Blog</a>
+                            <a href="https://changkun.de/books/"><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg>Books</a>
+                            <a href="https://changkun.de/blog/ideas"><svg class="icon" aria-hidden="true"><use href="#i-ideas"/></svg>Ideas</a>
+                            <a href="https://changkun.de/unverifiable-world"><svg class="icon" aria-hidden="true"><use href="#i-unverifiable"/></svg>Unverifiable World</a>
+                            <a href="https://golang.design/under-the-hood"><svg class="icon" aria-hidden="true"><use href="#i-under-the-hood"/></svg>Go: Under the Hood</a>
+                            <a href="https://aaai.latere.ai"><svg class="icon" aria-hidden="true"><use href="#i-infrastructure"/></svg>AI as an Infrastructure</a>
                         </div>
                     </div>
                     <div class="col">
                         <div class="col-label mono">Build</div>
                         <div class="col-links">
-                            <a href="https://changkun.de/s/github">GitHub</a>
-                            <a href="https://latere.ai">Latere AI</a>
-                            <a href="https://changkun.de/s/golang-design">golang.design</a>
-                            <a href="https://changkun.de/modern-cpp">Modern C++</a>
+                            <a href="https://changkun.de/s/github"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>GitHub</a>
+                            <a href="https://latere.ai"><svg class="icon icon-wide" aria-hidden="true"><use href="#i-latere"/></svg>Latere AI</a>
+                            <a href="https://changkun.de/s/golang-design"><svg class="icon icon-wide" aria-hidden="true"><use href="#i-go"/></svg>golang.design</a>
+                            <a href="https://changkun.de/modern-cpp"><svg class="icon" aria-hidden="true"><use href="#i-cpp"/></svg>Modern C++</a>
                         </div>
                     </div>
                     <div class="col">
                         <div class="col-label mono">Connect</div>
                         <div class="col-links">
-                            <a href="https://changkun.de/s/email">Email</a>
-                            <a href="https://www.linkedin.com/in/changkun/">LinkedIn</a>
-                            <a href="https://twitter.com/ouchangkun">Twitter</a>
+                            <a href="https://changkun.de/s/email"><svg class="icon" aria-hidden="true"><use href="#i-email"/></svg>Email</a>
+                            <a href="https://www.linkedin.com/in/changkun/"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg>LinkedIn</a>
+                            <a href="https://x.com/changkun"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>X</a>
                         </div>
                     </div>
                 </div>
