@@ -86,7 +86,8 @@
 
                 function getTheme() {
                     const stored = localStorage.getItem('theme');
-                    if (stored) return stored;
+                    // The blog once stored 'auto'; only a choice counts.
+                    if (stored === 'light' || stored === 'dark') return stored;
                     return prefersDark.matches ? 'dark' : 'light';
                 }
 
@@ -103,7 +104,7 @@
                 });
 
                 prefersDark.addEventListener('change', (e) => {
-                    if (!localStorage.getItem('theme')) {
+                    if (!['light', 'dark'].includes(localStorage.getItem('theme'))) {
                         setTheme(e.matches ? 'dark' : 'light');
                     }
                 });
