@@ -1,5 +1,6 @@
 /* The latere.ai ink palette, shared with the home page: neutral grays
- * with no hue, and the ink itself as the accent. */
+ * with no hue, the ink itself as the accent, and latere's navy as the one
+ * color, on a link under the pointer. */
 :root {
   --bg: #ffffff;
   --bg-raised: #f4f4f4;
@@ -7,6 +8,7 @@
   --text-secondary: #525252;
   --text-muted: #666666;
   --accent: var(--text);
+  --navy: #38538f;
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.14);
 }
@@ -17,6 +19,7 @@
   --text: #ececec;
   --text-secondary: #b4b4b4;
   --text-muted: #9a9a9a;
+  --navy: #9bb0e4;
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
 }
@@ -170,7 +173,7 @@ nav a {
 }
 
 nav a:hover {
-  color: var(--text-secondary);
+  color: var(--navy);
 }
 
 .page {
@@ -225,7 +228,7 @@ nav a:hover {
 }
 
 .book:hover .book-title {
-  color: var(--text-secondary);
+  color: var(--navy);
 }
 
 .book-sub {
