@@ -60,8 +60,11 @@ prompts and cannot drift from the ones it was built with.
 Every route except `/ideas/ping` requires an `Authorization: Bearer <token>`
 header carrying an access token from [latere auth](https://auth.latere.ai),
 which the compose box on changkun.de obtains through browser PKCE. The token
-is verified against the issuer's JWKS and then checked against
-`AUTH_ALLOWED_PRINCIPALS`: a valid token proves identity, not posting rights.
+is verified against the issuer's JWKS and then checked against two lists: the
+client it was minted for must be in `AUTH_ALLOWED_CLIENTS`, and the person in
+`AUTH_ALLOWED_PRINCIPALS`. A valid token proves identity, not posting rights,
+and a login token is addressed to the issuer, so without the client check a
+token handed to any other latere app would post here too.
 
 ## Configuration
 
@@ -80,6 +83,7 @@ mount the API; everything else has a default.
 | `GIT_COMMITTER_NAME` | `Changkun Ideas API Server` | Commit author name |
 | `GIT_COMMITTER_EMAIL` | `hi+ideas@changkun.de` | Commit author email |
 | `AUTH_ALLOWED_PRINCIPALS` | — | Comma-separated emails or principal ids allowed to post. Empty rejects every token |
+| `AUTH_ALLOWED_CLIENTS` | `changkun-blog` | Comma-separated OAuth client ids whose tokens are accepted |
 | `AUTH_URL` | `https://auth.latere.ai` | latere auth issuer |
 | `AUTH_JWKS_URL` | `$AUTH_URL/.well-known/jwks.json` | JWKS used to verify tokens |
 

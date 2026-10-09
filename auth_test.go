@@ -69,6 +69,8 @@ func (f *authFixture) token(t *testing.T, claims map[string]any) string {
 		"client_id":      "changkun-blog",
 	}
 	maps.Copy(payload, claims)
+	// A nil value removes the claim, so a case can mint a token without one.
+	maps.DeleteFunc(payload, func(_ string, v any) bool { return v == nil })
 
 	header, err := json.Marshal(map[string]string{"alg": "RS256", "kid": testKid, "typ": "JWT"})
 	if err != nil {
@@ -96,6 +98,7 @@ func (f *authFixture) verifier(allowed string) *latereVerifier {
 			Issuer:  f.issuer,
 		})),
 		allowed: principalSet(allowed),
+		clients: principalSet(defaultClient),
 		log:     log.New(io.Discard, "", 0),
 	}
 }
@@ -192,18 +195,49 @@ func TestAuthForgedSignature(t *testing.T) {
 	}
 }
 
-// TestAuthForeignClient pins what the verifier does and does not check. The
-// allowlist gates the principal, never the client the token was minted for, so
-// an allowlisted person reaches the API from any latere client.
+// TestAuthForeignClient refuses an allowlisted person's token when it was
+// minted for another latere client. A login token is addressed to the issuer,
+// so without the client check a token handed to any other latere app would
+// post to the blog.
 func TestAuthForeignClient(t *testing.T) {
 	f := newAuthFixture(t)
 
-	tok := f.token(t, map[string]any{
-		"email":     "hi@changkun.de",
-		"client_id": "some-other-client",
-	})
-	if got := doAuth(f.verifier("hi@changkun.de"), tok).Code; got != http.StatusOK {
-		t.Fatalf("status = %d, want %d", got, http.StatusOK)
+	tests := []struct {
+		name   string
+		claims map[string]any
+		want   int
+	}{
+		{
+			name:   "compose box client",
+			claims: map[string]any{"client_id": "changkun-blog"},
+			want:   http.StatusOK,
+		},
+		{
+			name:   "client named by azp alone",
+			claims: map[string]any{"client_id": nil, "azp": "changkun-blog"},
+			want:   http.StatusOK,
+		},
+		{
+			name:   "another latere client",
+			claims: map[string]any{"client_id": "some-other-client"},
+			want:   http.StatusUnauthorized,
+		},
+		{
+			name:   "no client",
+			claims: map[string]any{"client_id": nil},
+			want:   http.StatusUnauthorized,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			claims := map[string]any{"email": "hi@changkun.de"}
+			maps.Copy(claims, tt.claims)
+			got := doAuth(f.verifier("hi@changkun.de"), f.token(t, claims)).Code
+			if got != tt.want {
+				t.Fatalf("status = %d, want %d", got, tt.want)
+			}
+		})
 	}
 }
 
@@ -282,6 +316,15 @@ func TestNewLatereVerifier(t *testing.T) {
 	}
 	if !v.allowed["hi@changkun.de"] || !v.allowed["principal-1"] || len(v.allowed) != 2 {
 		t.Fatalf("allowed = %v", v.allowed)
+	}
+	if !v.clients["changkun-blog"] || len(v.clients) != 1 {
+		t.Fatalf("clients = %v, want the compose box client by default", v.clients)
+	}
+
+	t.Setenv("AUTH_ALLOWED_CLIENTS", "changkun-blog, latere-cli")
+	v = newLatereVerifier(log.New(io.Discard, "", 0))
+	if !v.clients["changkun-blog"] || !v.clients["latere-cli"] || len(v.clients) != 2 {
+		t.Fatalf("clients = %v", v.clients)
 	}
 }
 
