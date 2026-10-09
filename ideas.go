@@ -23,7 +23,7 @@ import (
 // names them otherwise is answered by LLM_MODEL and LLM_TITLE_MODEL.
 const (
 	defaultModel      = "anthropic/claude-opus-5.5"
-	defaultTitleModel = "anthropic/claude-haiku-4.5"
+	defaultTitleModel = "anthropic/claude-haiku-5.5"
 )
 
 // ideasPrefix is the subtree the ideas API owns. The routes below repeat it

@@ -106,7 +106,7 @@ func TestIdeasServiceModelsAreCatalogNames(t *testing.T) {
 	}
 	for _, m := range []struct{ name, got, want string }{
 		{"LLM_MODEL", svc.llm.model, "anthropic/claude-opus-5.5"},
-		{"LLM_TITLE_MODEL", svc.llm.titleModel, "anthropic/claude-haiku-4.5"},
+		{"LLM_TITLE_MODEL", svc.llm.titleModel, "anthropic/claude-haiku-5.5"},
 	} {
 		if m.got != m.want {
 			t.Errorf("the %s default is %q, want %q, the catalog's name", m.name, m.got, m.want)
