@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -89,12 +88,14 @@ func TestNewIdeasServiceReadsRepo(t *testing.T) {
 	}
 }
 
-// TestIdeasServiceModelsAreNativeNames pins the bare default names. Lux
-// resolves a name exactly and never strips a prefix, so a default must be a
-// name the platform serves as written. Provider-prefixed defaults once
-// shipped for four weeks and failed on the first post that reached a healthy
-// gateway; a deployment that needs another name sets it in the environment.
-func TestIdeasServiceModelsAreNativeNames(t *testing.T) {
+// TestIdeasServiceModelsAreCatalogNames pins the defaults to the names the
+// default gateway's catalog lists. Lux resolves a name exactly, and the two
+// gateways this service has used disagree on the form: lux.latere.ai refused
+// a provider prefix, and api.latere.ai/v1/models answers a bare name with
+// model_not_found. Each mismatch shipped and failed on the first post that
+// reached the gateway, so a default changes with the default gateway and a
+// deployment that needs another name sets it in the environment.
+func TestIdeasServiceModelsAreCatalogNames(t *testing.T) {
 	ideasEnv(t)
 	t.Setenv("LLM_MODEL", "")
 	t.Setenv("LLM_TITLE_MODEL", "")
@@ -103,15 +104,12 @@ func TestIdeasServiceModelsAreNativeNames(t *testing.T) {
 	if svc == nil {
 		t.Fatal("newIdeasService() = nil, want a service")
 	}
-	for _, m := range []struct{ name, model string }{
-		{"LLM_MODEL", svc.llm.model},
-		{"LLM_TITLE_MODEL", svc.llm.titleModel},
+	for _, m := range []struct{ name, got, want string }{
+		{"LLM_MODEL", svc.llm.model, "anthropic/claude-opus-4.8"},
+		{"LLM_TITLE_MODEL", svc.llm.titleModel, "anthropic/claude-haiku-4.5"},
 	} {
-		if m.model == "" {
-			t.Errorf("the %s default is empty", m.name)
-		}
-		if strings.Contains(m.model, "/") {
-			t.Errorf("the %s default is %q, want a bare model name", m.name, m.model)
+		if m.got != m.want {
+			t.Errorf("the %s default is %q, want %q, the catalog's name", m.name, m.got, m.want)
 		}
 	}
 }

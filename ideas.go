@@ -16,13 +16,14 @@ import (
 )
 
 // Lux resolves a model name exactly: no prefix is stripped and no alias is
-// looked up, so a name either is one of the platform's Models or is refused
-// with model_not_found. The defaults are the bare names the retired
-// lux.latere.ai gateway served. A platform whose catalog names them otherwise
-// is answered by LLM_MODEL and LLM_TITLE_MODEL, not by a change here.
+// looked up, so a name either is one of the gateway's Models or is refused
+// with model_not_found. The defaults are the names the default gateway's
+// catalog lists, provider first and the version written with a dot. The
+// retired lux.latere.ai served bare names instead. A gateway whose catalog
+// names them otherwise is answered by LLM_MODEL and LLM_TITLE_MODEL.
 const (
-	defaultModel      = "claude-opus-4-8"
-	defaultTitleModel = "claude-haiku-4-5-20251001"
+	defaultModel      = "anthropic/claude-opus-4.8"
+	defaultTitleModel = "anthropic/claude-haiku-4.5"
 )
 
 // ideasPrefix is the subtree the ideas API owns. The routes below repeat it
