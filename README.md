@@ -76,7 +76,7 @@ mount the API; everything else has a default.
 | `MAIN_ADDR` | `0.0.0.0:80` | Listen address |
 | `LLM_BASE_URL` | `https://api.latere.ai/v1/models` | Lux gateway root |
 | `LLM_API_KEY` | — | Lux Key from the latere platform |
-| `LLM_MODEL` | `anthropic/claude-opus-4.8` | Augmentation and translation, as the gateway's catalog names it |
+| `LLM_MODEL` | `anthropic/claude-opus-5.5` | Augmentation and translation, as the gateway's catalog names it |
 | `LLM_TITLE_MODEL` | `anthropic/claude-haiku-4.5` | Title, slug, and polish, as the gateway's catalog names it |
 | `GIT_TOKEN` | — | GitHub personal access token |
 | `GIT_REPO` | `changkun/blog` | Target repository, `owner/repo` |

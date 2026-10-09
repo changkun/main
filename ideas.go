@@ -22,7 +22,7 @@ import (
 // retired lux.latere.ai served bare names instead. A gateway whose catalog
 // names them otherwise is answered by LLM_MODEL and LLM_TITLE_MODEL.
 const (
-	defaultModel      = "anthropic/claude-opus-4.8"
+	defaultModel      = "anthropic/claude-opus-5.5"
 	defaultTitleModel = "anthropic/claude-haiku-4.5"
 )
 

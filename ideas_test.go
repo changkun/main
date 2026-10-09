@@ -105,7 +105,7 @@ func TestIdeasServiceModelsAreCatalogNames(t *testing.T) {
 		t.Fatal("newIdeasService() = nil, want a service")
 	}
 	for _, m := range []struct{ name, got, want string }{
-		{"LLM_MODEL", svc.llm.model, "anthropic/claude-opus-4.8"},
+		{"LLM_MODEL", svc.llm.model, "anthropic/claude-opus-5.5"},
 		{"LLM_TITLE_MODEL", svc.llm.titleModel, "anthropic/claude-haiku-4.5"},
 	} {
 		if m.got != m.want {
