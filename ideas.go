@@ -15,11 +15,11 @@ import (
 	"latere.ai/x/pkg/luxsdk"
 )
 
-// The gateway's native dialect names a model on its own, without a provider
-// prefix: luxsdk posts to POST /lux/v1/generate, where routing comes from the
-// key's bindings rather than from the name. A prefixed name is refused with
-// "model is not bound on this key". The prefixed form belongs to the
-// gateway's provider-compatible surfaces, which this service does not use.
+// Lux resolves a model name exactly: no prefix is stripped and no alias is
+// looked up, so a name either is one of the platform's Models or is refused
+// with model_not_found. The defaults are the bare names the retired
+// lux.latere.ai gateway served. A platform whose catalog names them otherwise
+// is answered by LLM_MODEL and LLM_TITLE_MODEL, not by a change here.
 const (
 	defaultModel      = "claude-opus-4-8"
 	defaultTitleModel = "claude-haiku-4-5-20251001"
@@ -34,15 +34,20 @@ const ideasPrefix = "/ideas/"
 // when it cannot.
 //
 // Serving changkun.de is the primary job of this binary and needs no
-// configuration at all. The ideas API needs a model gateway and a GitHub
+// configuration at all. The ideas API needs a model gateway key and a GitHub
 // token. Missing credentials therefore leave the API unbuilt rather than stop
 // the process: a host that carries no secrets still serves the site.
+//
+// The gateway itself has a default, Lux under the latere platform origin. It
+// is passed explicitly rather than left to luxsdk, which would otherwise read
+// LUX_BASE_URL from the environment and let an unrelated variable retarget
+// this service.
 func newIdeasService(l *log.Logger) *service {
-	llmBaseURL := os.Getenv("LLM_BASE_URL")
+	llmBaseURL := cmp.Or(os.Getenv("LLM_BASE_URL"), luxsdk.DefaultBaseURL)
 	llmAPIKey := os.Getenv("LLM_API_KEY")
 	gitToken := os.Getenv("GIT_TOKEN")
-	if llmBaseURL == "" || llmAPIKey == "" || gitToken == "" {
-		l.Println("ideas API is unconfigured, LLM_BASE_URL, LLM_API_KEY and GIT_TOKEN are required")
+	if llmAPIKey == "" || gitToken == "" {
+		l.Println("ideas API is unconfigured, LLM_API_KEY and GIT_TOKEN are required")
 		return nil
 	}
 

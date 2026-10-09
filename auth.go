@@ -11,8 +11,7 @@ import (
 	"os"
 	"strings"
 
-	"latere.ai/x/pkg/authkit"
-	"latere.ai/x/pkg/jwtauth"
+	"latere.ai/x/pkg/authkit/jwt"
 )
 
 // latereVerifier accepts the RS256 access tokens that auth.latere.ai issues to
@@ -23,7 +22,7 @@ import (
 // signature only proves *who* is calling. The allowlist decides whether that
 // principal may write to the blog.
 type latereVerifier struct {
-	auth    *authkit.JWT
+	auth    *jwt.Authenticator
 	allowed map[string]bool // lowercased email or principal id (sub)
 	log     *log.Logger
 }
@@ -43,7 +42,7 @@ func newLatereVerifier(l *log.Logger) *latereVerifier {
 	l.Printf("latere auth enabled: issuer=%s principals=%d", issuer, len(allowed))
 
 	return &latereVerifier{
-		auth:    authkit.NewJWT(jwtauth.New(jwtauth.Config{JWKSURL: jwks, Issuer: issuer}), nil),
+		auth:    jwt.NewAuthenticator(jwt.New(jwt.Config{JWKSURL: jwks, Issuer: issuer})),
 		allowed: allowed,
 		log:     l,
 	}
@@ -63,8 +62,8 @@ func principalSet(s string) map[string]bool {
 // allow reports whether r carries a latere token belonging to an allowlisted
 // principal.
 //
-// authkit.JWT decides identity: it reads the Bearer header and validates the
-// signature, issuer and expiry. The allowlist decides authority, and stays
+// jwt.Authenticator decides identity: it reads the Bearer header and validates
+// the signature, issuer and expiry. The allowlist decides authority, and stays
 // here, because who may write to this blog is not something a token can say.
 //
 // A nil receiver denies everything. newLatereVerifier returns nil when no

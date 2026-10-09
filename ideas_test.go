@@ -31,7 +31,6 @@ func TestNewIdeasServiceNeedsCredentials(t *testing.T) {
 		name  string
 		unset string
 	}{
-		{name: "no gateway", unset: "LLM_BASE_URL"},
 		{name: "no api key", unset: "LLM_API_KEY"},
 		{name: "no git token", unset: "GIT_TOKEN"},
 	}
@@ -43,6 +42,16 @@ func TestNewIdeasServiceNeedsCredentials(t *testing.T) {
 				t.Fatalf("newIdeasService() = %v, want nil without %s", svc, tt.unset)
 			}
 		})
+	}
+}
+
+// TestNewIdeasServiceDefaultsGateway keeps LLM_BASE_URL optional: luxsdk
+// names the platform's live Lux deployment, so a key alone mounts the API.
+func TestNewIdeasServiceDefaultsGateway(t *testing.T) {
+	ideasEnv(t)
+	t.Setenv("LLM_BASE_URL", "")
+	if svc := newIdeasService(discard()); svc == nil {
+		t.Fatal("newIdeasService() = nil, want a service on the default gateway")
 	}
 }
 
@@ -80,11 +89,11 @@ func TestNewIdeasServiceReadsRepo(t *testing.T) {
 	}
 }
 
-// TestIdeasServiceModelsAreNativeNames pins the dialect the gateway speaks.
-// luxsdk posts to /lux/v1/generate, which routes on the key's bindings, and a
-// provider-prefixed name is refused there with "model is not bound on this
-// key". The prefixed defaults shipped for four weeks and failed on the first
-// post that reached a healthy gateway.
+// TestIdeasServiceModelsAreNativeNames pins the bare default names. Lux
+// resolves a name exactly and never strips a prefix, so a default must be a
+// name the platform serves as written. Provider-prefixed defaults once
+// shipped for four weeks and failed on the first post that reached a healthy
+// gateway; a deployment that needs another name sets it in the environment.
 func TestIdeasServiceModelsAreNativeNames(t *testing.T) {
 	ideasEnv(t)
 	t.Setenv("LLM_MODEL", "")
@@ -102,8 +111,7 @@ func TestIdeasServiceModelsAreNativeNames(t *testing.T) {
 			t.Errorf("the %s default is empty", m.name)
 		}
 		if strings.Contains(m.model, "/") {
-			t.Errorf("the %s default is %q, want a bare model name: the native "+
-				"dialect refuses a provider prefix", m.name, m.model)
+			t.Errorf("the %s default is %q, want a bare model name", m.name, m.model)
 		}
 	}
 }

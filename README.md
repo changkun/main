@@ -36,16 +36,22 @@ missing, detects the language, polishes and translates the text, picks a short
 slug, augments it with a sourced deep dive, and commits bilingual markdown to
 `content/ideas/`.
 
-Model calls go through the [Lux gateway](https://lux.latere.ai) using its own
+Model calls go through [Lux](https://github.com/latere-ai/lux), the model
+gateway of the [latere platform](https://platform.latere.ai), using its own
 dialect, so one request shape covers every model it routes. Augmentation asks
 the provider to search and fetch pages itself, which is what makes the
 citations point at sources that exist.
 
 Two things follow from the dialect being the native one. `LLM_BASE_URL` is the
-gateway root: the calls go to `POST /lux/v1/generate`, which does not exist
-under a provider-compatible surface such as `/anthropic`. And a model is named
-on its own, without a provider prefix, because routing comes from the key's
-bindings; a prefixed name is refused with "model is not bound on this key".
+gateway root, `https://api.latere.ai/v1/models` by default: the calls go to
+`POST /lux/v1/generate` under it, which does not exist under a
+provider-compatible surface such as `/anthropic`. And a model name is resolved
+exactly, with no prefix stripped and no alias looked up, so `LLM_MODEL` and
+`LLM_TITLE_MODEL` must be names the platform's catalog serves as written.
+
+`LLM_API_KEY` is a Lux Key created on the platform. Lux takes Keys only on its
+model routes, never a person's login token, so the key is the service's own
+credential. Scope it to the two models and give it a budget.
 
 Every instruction sent to a model lives in `prompts/` as a Go text template,
 compiled into the binary with `go:embed`. A deployed server carries its own
@@ -59,14 +65,14 @@ is verified against the issuer's JWKS and then checked against
 
 ## Configuration
 
-Copy `.env.template` to `.env`. `LLM_BASE_URL`, `LLM_API_KEY` and `GIT_TOKEN`
-are required to mount the API; everything else has a default.
+Copy `.env.template` to `.env`. `LLM_API_KEY` and `GIT_TOKEN` are required to
+mount the API; everything else has a default.
 
 | Variable | Default | Description |
 |---|---|---|
 | `MAIN_ADDR` | `0.0.0.0:80` | Listen address |
-| `LLM_BASE_URL` | — | Lux gateway root, e.g. `https://lux.latere.ai` |
-| `LLM_API_KEY` | — | Lux API key |
+| `LLM_BASE_URL` | `https://api.latere.ai/v1/models` | Lux gateway root |
+| `LLM_API_KEY` | — | Lux Key from the latere platform |
 | `LLM_MODEL` | `claude-opus-4-8` | Augmentation and translation |
 | `LLM_TITLE_MODEL` | `claude-haiku-4-5-20251001` | Title, slug, and polish |
 | `GIT_TOKEN` | — | GitHub personal access token |

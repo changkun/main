@@ -20,8 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"latere.ai/x/pkg/authkit"
-	"latere.ai/x/pkg/jwtauth"
+	"latere.ai/x/pkg/authkit/jwt"
 )
 
 const testKid = "test-key"
@@ -92,10 +91,10 @@ func (f *authFixture) token(t *testing.T, claims map[string]any) string {
 
 func (f *authFixture) verifier(allowed string) *latereVerifier {
 	return &latereVerifier{
-		auth: authkit.NewJWT(jwtauth.New(jwtauth.Config{
+		auth: jwt.NewAuthenticator(jwt.New(jwt.Config{
 			JWKSURL: f.issuer + "/.well-known/jwks.json",
 			Issuer:  f.issuer,
-		}), nil),
+		})),
 		allowed: principalSet(allowed),
 		log:     log.New(io.Discard, "", 0),
 	}
@@ -208,7 +207,7 @@ func TestAuthForeignClient(t *testing.T) {
 	}
 }
 
-// TestAuthMalformedHeader covers the header parsing authkit.JWT now owns. A
+// TestAuthMalformedHeader covers the header parsing jwt.Authenticator owns. A
 // missing header, a scheme other than Bearer, and a bare prefix must all be
 // refused rather than reaching the validator with a nonsense token.
 func TestAuthMalformedHeader(t *testing.T) {
